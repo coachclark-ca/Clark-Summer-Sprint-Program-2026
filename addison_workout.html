@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Addison's Summer Program</title>
+<style>
+  :root {
+    --green: #1a6b3c;
+    --green-light: #e8f5ee;
+    --green-mid: #4caf76;
+    --gold: #c8922a;
+    --gold-light: #fdf3e3;
+    --red: #c0392b;
+    --red-light: #fdecea;
+    --purple: #5b3d8a;
+    --purple-light: #f0eaf8;
+    --blue: #1e5fa8;
+    --blue-light: #e8f0fb;
+    --gray-dark: #1c1c1e;
+    --gray-mid: #48484a;
+    --gray-soft: #8e8e93;
+    --gray-border: #d1d1d6;
+    --gray-bg: #f2f2f7;
+    --white: #ffffff;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: var(--font); background: var(--gray-bg); color: var(--gray-dark); min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: var(--green);
+    color: white;
+    padding: 52px 20px 20px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .header p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-end; }
+  .progress-pill {
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* TABS */
+  .phase-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-border);
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .phase-bar::-webkit-scrollbar { display: none; }
+  .phase-tabs { display: inline-flex; padding: 0 12px; }
+  .ptab {
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-soft);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    background: none;
+    border-left: none; border-right: none; border-top: none;
+  }
+  .ptab.active { color: var(--green); border-bottom-color: var(--green); }
+
+  .week-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-border);
+    overflow-x: auto; white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0 12px;
+  }
+  .week-bar::-webkit-scrollbar { display: none; }
+  .wtab {
+    display: inline-block;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-soft);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    background: none;
+    border-left: none; border-right: none; border-top: none;
+  }
+  .wtab.active { color: var(--green); border-bottom-color: var(--green); }
+
+  /* VACATION BANNER */
+  .vacation-banner {
+    background: var(--gold-light);
+    border: 1px solid #e8c56a;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin: 16px 16px 0;
+    font-size: 13px;
+    color: #7a5500;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .vacation-banner .icon { font-size: 20px; flex-shrink: 0; }
+
+  /* WEEK SUMMARY */
+  .week-meta { padding: 16px 16px 0; }
+  .week-title { font-size: 20px; font-weight: 700; }
+  .week-sub { font-size: 13px; color: var(--gray-soft); margin-top: 3px; }
+  .target-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip {
+    font-size: 11px; font-weight: 600; padding: 4px 10px;
+    border-radius: 20px; background: var(--green-light); color: var(--green);
+  }
+  .chip.exp { background: var(--purple-light); color: var(--purple); }
+  .chip.run { background: var(--gold-light); color: var(--gold); }
+
+  /* DAY CARDS */
+  .days { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .day-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .day-card.rest-card { background: var(--gray-bg); box-shadow: none; border: 1px solid var(--gray-border); }
+
+  .day-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; cursor: pointer;
+    user-select: none; -webkit-user-select: none;
+  }
+  .day-name { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-soft); }
+  .day-title { font-size: 15px; font-weight: 600; color: var(--gray-dark); margin-top: 2px; }
+  .day-pills { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+  .dpill {
+    font-size: 10px; font-weight: 600; padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .dpill.str { background: var(--blue-light); color: var(--blue); }
+  .dpill.exp { background: var(--purple-light); color: var(--purple); }
+  .dpill.run { background: var(--gold-light); color: var(--gold); }
+  .dpill.flex { background: var(--green-light); color: var(--green); }
+  .dpill.rest { background: var(--gray-bg); color: var(--gray-soft); }
+  .dpill.core { background: #f0e8f8; color: #5b2d8a; }
+
+  .chevron { font-size: 18px; color: var(--gray-soft); transition: transform 0.2s; flex-shrink: 0; }
+  .day-card.open .chevron { transform: rotate(180deg); }
+
+  .day-body { display: none; padding: 0 16px 16px; }
+  .day-card.open .day-body { display: block; }
+
+  /* BLOCKS */
+  .block { margin-bottom: 14px; }
+  .block:last-child { margin-bottom: 0; }
+  .block-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--gray-soft);
+    padding: 8px 0 6px;
+    border-top: 1px solid var(--gray-border);
+    margin-top: 4px;
+  }
+
+  /* EXERCISE ROWS */
+  .ex-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--gray-border);
+    position: relative;
+  }
+  .ex-row:last-child { border-bottom: none; }
+  .ex-row.crossed .ex-name { text-decoration: line-through; color: var(--gray-soft); }
+  .ex-row.crossed .ex-scheme { text-decoration: line-through; color: var(--gray-soft); }
+  .ex-row.done .ex-name { color: var(--green); }
+  .ex-row.done .checkmark { background: var(--green); color: white; }
+
+  .checkmark {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid var(--gray-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; cursor: pointer; flex-shrink: 0;
+    transition: all 0.15s;
+    margin-top: 1px;
+    background: white;
+    color: transparent;
+  }
+  .checkmark:active { transform: scale(0.9); }
+
+  .ex-content { flex: 1; min-width: 0; }
+  .ex-name-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .ex-name { font-size: 14px; font-weight: 500; color: var(--gray-dark); flex: 1; }
+  .ex-scheme { font-size: 12px; color: var(--gray-soft); white-space: nowrap; text-align: right; }
+  .ex-note { font-size: 11px; color: var(--gray-soft); margin-top: 2px; line-height: 1.4; }
+  .ex-note.bodyweight { color: var(--green); font-weight: 500; }
+
+  /* EDIT CONTROLS */
+  .ex-actions { display: none; gap: 6px; margin-top: 6px; }
+  .ex-row.editing .ex-actions { display: flex; }
+  .ex-row.editing .ex-name { display: none; }
+  .ex-row.editing .ex-scheme { display: none; }
+  .ex-row.editing .ex-note { display: none; }
+  .ex-edit-inputs { display: none; flex-direction: column; gap: 5px; flex: 1; }
+  .ex-row.editing .ex-edit-inputs { display: flex; }
+  .edit-input {
+    border: 1px solid var(--gray-border); border-radius: 6px;
+    padding: 6px 10px; font-size: 13px; width: 100%;
+    font-family: var(--font); background: var(--gray-bg);
+    color: var(--gray-dark);
+  }
+  .edit-input:focus { outline: none; border-color: var(--green); background: white; }
+  .btn-sm {
+    font-size: 12px; font-weight: 600; padding: 6px 12px;
+    border-radius: 6px; border: none; cursor: pointer;
+  }
+  .btn-save { background: var(--green); color: white; }
+  .btn-delete { background: var(--red-light); color: var(--red); }
+  .btn-cancel { background: var(--gray-bg); color: var(--gray-mid); }
+
+  .edit-toggle {
+    font-size: 16px; color: var(--gray-soft); cursor: pointer;
+    padding: 2px 4px; border: none; background: none;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .edit-toggle:active { color: var(--gray-dark); }
+
+  /* ADD EXERCISE */
+  .add-ex-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 0; font-size: 13px; color: var(--green);
+    font-weight: 600; cursor: pointer; background: none;
+    border: none; border-top: 1px dashed var(--gray-border);
+    width: 100%; margin-top: 4px;
+  }
+  .add-ex-form { display: none; flex-direction: column; gap: 8px; padding: 10px 0; }
+  .add-ex-form.open { display: flex; }
+  .add-row { display: flex; gap: 6px; }
+
+  /* BODYWEIGHT ALTERNATIVES */
+  .bw-section {
+    background: var(--green-light);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-top: 12px;
+  }
+  .bw-title { font-size: 12px; font-weight: 700; color: var(--green); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .bw-row { font-size: 12px; color: var(--gray-mid); padding: 4px 0; border-bottom: 1px solid rgba(26,107,60,0.15); line-height: 1.5; }
+  .bw-row:last-child { border-bottom: none; }
+  .bw-row strong { color: var(--green); }
+
+  /* COACH NOTE */
+  .coach-note {
+    background: var(--gold-light);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #5a3e00;
+    line-height: 1.6;
+    margin: 0 16px 20px;
+  }
+  .coach-note strong { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold); margin-bottom: 4px; }
+
+  /* PROGRESS BAR */
+  .day-progress {
+    height: 3px; background: var(--gray-border); border-radius: 3px; margin: 8px 0 0;
+  }
+  .day-progress-fill { height: 3px; background: var(--green); border-radius: 3px; transition: width 0.3s; }
+
+  /* OVERALL PROGRESS */
+  .overall-bar { margin: 10px 16px 0; }
+  .overall-bar-track { height: 4px; background: rgba(255,255,255,0.3); border-radius: 4px; }
+  .overall-bar-fill { height: 4px; background: white; border-radius: 4px; transition: width 0.5s; }
+  .overall-label { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--gray-dark); color: white;
+    padding: 10px 20px; border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+    transition: transform 0.25s; z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* MODAL */
+  .modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); z-index: 200;
+    align-items: flex-end;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: white; border-radius: 20px 20px 0 0;
+    padding: 20px; width: 100%;
+    max-height: 80vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .modal p { font-size: 13px; color: var(--gray-soft); margin-bottom: 16px; }
+  .modal-close { float: right; font-size: 22px; cursor: pointer; color: var(--gray-soft); border: none; background: none; }
+
+  @media (min-width: 600px) {
+    .days { max-width: 600px; margin: 0 auto; }
+    .week-meta { max-width: 600px; margin: 0 auto; }
+    .coach-note { max-width: 600px; margin: 0 auto 20px; }
+    .vacation-banner { max-width: 600px; margin: 16px auto 0; }
+    .overall-bar { max-width: 600px; margin: 10px auto 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-row">
+    <div>
+      <h1>Addison's Summer Strength</h1>
+      <p>6-Week Garage Program · Class of 2028</p>
+    </div>
+    <div class="progress-pill" id="overallPill">0% done</div>
+  </div>
+  <div class="overall-bar">
+    <div class="overall-bar-track"><div class="overall-bar-fill" id="overallFill" style="width:0%"></div></div>
+    <div class="overall-label" id="overallLabel">0 of 0 exercises complete</div>
+  </div>
+</div>
+
+<div class="phase-bar">
+  <div class="phase-tabs" id="phaseTabs"></div>
+</div>
+<div class="week-bar" id="weekBar"></div>
+
+<div id="mainContent"></div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h3>Bodyweight Alternatives</h3>
+    <p>No weights? No problem. Swap any exercise below — works for vacation or any day without the garage.</p>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+const BW_ALTS = {
+  "DB bent-over row": { swap: "Resistance band bent-over row", note: "Anchor band under feet, same hinge position" },
+  "DB chest-supported row": { swap: "Superman hold + row", note: "Lie face down, squeeze shoulder blades — hold 3s each rep" },
+  "DB Romanian deadlift": { swap: "Single-leg hip hinge (bodyweight)", note: "Slow and controlled, feel the hamstring stretch" },
+  "DB goblet squat": { swap: "Deep bodyweight squat with pause", note: "3-second hold at bottom, drive knees out" },
+  "DB hip thrust": { swap: "Glute bridge with 3s hold", note: "Single leg if too easy — squeeze glute hard at top" },
+  "DB sumo deadlift": { swap: "Sumo squat pulse + hold", note: "Wide stance, 5 pulses + 5s hold at bottom each set" },
+  "DB reverse lunge": { swap: "Bodyweight reverse lunge", note: "Add a knee drive at the top for hip flexor activation" },
+  "DB lateral lunge": { swap: "Lateral squat (bodyweight)", note: "Sit into the hip, other leg straight" },
+  "Single-leg calf raise": { swap: "Single-leg calf raise (no weight)", note: "Slow 3-count down — tempo is the load" },
+  "DB single-arm row": { swap: "Band single-arm row", note: "Anchor band to door handle at hip height" },
+  "DB step-up": { swap: "Step-up onto park bench", note: "Any stable elevated surface works" },
+  "Box jump": { swap: "Broad jump or vertical jump", note: "Same explosive intent, different direction" },
+  "Hang clean": { swap: "Jump squat", note: "Same triple extension — ankles, knees, hips" },
+  "Pull-up": { swap: "Band-assisted pull-up or band pull-down", note: "Loop band over a bar or door anchor" },
+};
+
+const VACATION_WEEKS = [1, 2]; // 0-indexed, so weeks 3 & 4
+
+const phases = [
+  "Phase 1 — Foundation",
+  "Phase 2 — Strength",
+  "Phase 3 — Peak Power"
+];
+
+const programData = [
+// WEEK 1
+{
+  phase:0, title:"Week 1", sub:"Deload & rebuild — low intensity, high technique",
+  vacation: false,
+  targets:["Back","Core","Hip Flexors","Calves","Glutes"],
+  note:"She just came off ECNL + varsity track simultaneously — this week is mandatory recovery, not optional. Weights should feel almost too light. That's correct. Every lift day ends with 10 min of flexibility work — do not skip it.",
+  days:[
+    { name:"Monday", type:"Lift A — Back & Core", pills:["str","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope",s:"3 × 60s",note:"Easy pace — calf bounce and rhythm"},
+        {n:"Band pull-apart",s:"2 × 15",note:"Upper back activation"},
+        {n:"Cat-cow + thoracic rotation",s:"2 × 10 each",note:"Spine mobility before loading"}
+      ]},
+      { title:"Main Lift (30 min)", exs:[
+        {n:"DB bent-over row",s:"3 × 10 each side",note:"Hip hinge, squeeze lat at top"},
+        {n:"DB chest-supported row",s:"3 × 10 each side",note:"Face down on bench — full range"},
+        {n:"DB Romanian deadlift",s:"3 × 10",note:"Feel the hamstring stretch at the bottom"},
+        {n:"Plank",s:"3 × 30s",note:"Ribs down, glutes squeezed — no sagging"},
+        {n:"Dead bug",s:"3 × 8 each side",note:"Lower back stays flat on floor"},
+        {n:"Single-leg calf raise",s:"3 × 15 each",note:"Full range — heel below platform level"}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Hip flexor kneeling lunge",s:"90s each side",note:"Priority #1 for her sprint mechanics"},
+        {n:"Pigeon pose",s:"90s each side",note:""},
+        {n:"Seated hamstring reach",s:"90s each side",note:""}
+      ]}
+    ]},
+    { name:"Tuesday", type:"Easy Run + Flexibility", pills:["run","flex"], blocks:[
+      { title:"Run (20 min)", exs:[
+        {n:"Easy jog or walk-jog",s:"20 min",note:"60–65% effort — conversational pace, no sprinting"},
+        {n:"4 × 20m relaxed strides",s:"at end only",note:"75% — just to keep legs moving"}
+      ]},
+      { title:"Flexibility (20 min)", exs:[
+        {n:"Hip flexor lunge stretch",s:"2 × 90s each side",note:"Priority"},
+        {n:"Band-assisted hamstring",s:"2 × 60s each side",note:"Band around foot, leg straight up"},
+        {n:"Pigeon pose",s:"2 min each side",note:""},
+        {n:"Calf stretch straight + bent knee",s:"60s each position",note:"Straight = gastrocnemius, bent = soleus"},
+        {n:"Child's pose into lat stretch",s:"90s each side",note:"Thread arm under for the lat pull"}
+      ]}
+    ]},
+    { name:"Wednesday", type:"Lift B — Hip, Glute & Calf", pills:["str","exp"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope — alternating feet",s:"3 × 45s",note:""},
+        {n:"Band clamshell",s:"2 × 15 each",note:"Glute medius — key for lateral movement"},
+        {n:"Hip circle walkout",s:"2 × 10 each direction",note:""}
+      ]},
+      { title:"Main Lift (30 min)", exs:[
+        {n:"DB goblet squat",s:"3 × 10",note:"Chest tall, pause 1s at bottom"},
+        {n:"DB hip thrust",s:"3 × 12",note:"Drive through heel — not lower back"},
+        {n:"Lateral band walk",s:"3 × 15 each direction",note:"Band above knees, slight squat, tension throughout"},
+        {n:"Single-leg calf raise",s:"3 × 12 each",note:"Slow and full range — builds ankle stiffness for sprinting"},
+        {n:"Band hip flexor march",s:"3 × 12 each",note:"Band low anchor — drive knee up against resistance"},
+        {n:"DB lateral lunge",s:"3 × 8 each side",note:"Sit into hip, chest up"}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Supine figure-4",s:"2 min each side",note:"Glute and hip rotator"},
+        {n:"Standing quad stretch",s:"60s each side",note:""},
+        {n:"Forward fold + calf emphasis",s:"90s",note:""}
+      ]}
+    ]},
+    { name:"Thursday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest",s:"—",note:"Light walking only. No gym, no sprints."}]}
+    ]},
+    { name:"Friday", type:"Lift C — Full Body Explosive Intro", pills:["str","exp","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope",s:"3 × 60s",note:""},
+        {n:"Band pull-apart + overhead reach",s:"2 × 12",note:""},
+        {n:"Inchworm walkout",s:"2 × 8",note:""}
+      ]},
+      { title:"Explosive Block (15 min)", exs:[
+        {n:"Box jump (bench)",s:"3 × 5",note:"Land softly — full hip extension at top, step down"},
+        {n:"Broad jump",s:"3 × 5",note:"Two-foot takeoff, stick the landing, reset each rep"},
+        {n:"Overhead DB throw into mat",s:"3 × 8",note:"Light DB — full body from heels through throw"}
+      ]},
+      { title:"Strength Block (20 min)", exs:[
+        {n:"DB sumo deadlift",s:"3 × 10",note:"Wide stance, lat tension before pulling, back flat"},
+        {n:"DB single-arm row",s:"3 × 10 each",note:""},
+        {n:"Hollow body hold",s:"3 × 20s",note:"Lower back pressed to floor, arms overhead"},
+        {n:"Pallof press (band)",s:"3 × 10 each side",note:"Anti-rotation core — transfers directly to cutting"}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Hip flexor lunge + reach",s:"90s each side",note:""},
+        {n:"Band hamstring supine",s:"90s each side",note:""},
+        {n:"Thread the needle thoracic",s:"60s each side",note:""}
+      ]}
+    ]},
+    { name:"Saturday", type:"Easy Run + Flexibility", pills:["run","flex"], blocks:[
+      { title:"Run (20 min)", exs:[
+        {n:"Easy jog",s:"20 min",note:"Same as Tuesday — relaxed, conversational pace"}
+      ]},
+      { title:"Flexibility (20 min)", exs:[
+        {n:"Full lower body flow",s:"20 min",note:"Hip flexor lunge, pigeon, figure-4, hamstring, calf, quad — hold 60–90s each"}
+      ]}
+    ]},
+    { name:"Sunday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest",s:"—",note:""}]}
+    ]}
+  ]
+},
+// WEEK 2
+{
+  phase:0, title:"Week 2", sub:"Add load — same movements, heavier DBs, sharper form",
+  vacation: false,
+  targets:["Back","Core","Hip Flexors","Calves","Glutes"],
+  note:"By end of week 2 she should know exactly what every exercise feels like. Add 5–10 lbs on any movement that felt easy in week 1. Flexibility holds get longer — 2 min minimum on hip flexors.",
+  days:[
+    { name:"Monday", type:"Lift A — Back & Core", pills:["str","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope — alternating feet",s:"3 × 60s",note:""},
+        {n:"Band pull-apart",s:"2 × 15",note:""},
+        {n:"World's greatest stretch",s:"3 each side",note:"Hip + thoracic + hip flexor in one move"}
+      ]},
+      { title:"Main Lift (30 min)", exs:[
+        {n:"DB bent-over row",s:"4 × 10 each",note:"Add 5 lbs from week 1"},
+        {n:"DB chest-supported row",s:"3 × 12",note:"Removes lower back fatigue — go heavier here"},
+        {n:"DB Romanian deadlift",s:"4 × 10",note:"Add 5–10 lbs"},
+        {n:"Plank with shoulder tap",s:"3 × 10 each",note:"Anti-rotation — harder than a regular plank"},
+        {n:"Dead bug",s:"3 × 10 each side",note:""},
+        {n:"Single-leg calf raise (DB)",s:"3 × 15 each",note:"Hold a DB for added load this week"}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Hip flexor lunge + overhead reach",s:"2 min each side",note:""},
+        {n:"Pigeon pose",s:"2 min each side",note:""},
+        {n:"Lat stretch in doorframe",s:"90s each side",note:""}
+      ]}
+    ]},
+    { name:"Tuesday", type:"Easy Run + Flexibility", pills:["run","flex"], blocks:[
+      { title:"Run (25 min)", exs:[
+        {n:"Easy jog",s:"25 min",note:"Add 5 min from week 1 — still conversational"},
+        {n:"6 × 20m strides",s:"at end",note:"75% — relaxed, long stride"}
+      ]},
+      { title:"Flexibility (20 min)", exs:[
+        {n:"Full lower body flow + upper back",s:"20 min",note:"Same sequence as week 1 — hold 90–120s each"}
+      ]}
+    ]},
+    { name:"Wednesday", type:"Lift B — Hip, Glute & Calf", pills:["str","exp"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope",s:"3 × 60s",note:""},
+        {n:"Band clamshell + lateral walk",s:"2 × 15 each",note:""},
+        {n:"Hip circle walkout",s:"2 × 10 each",note:""}
+      ]},
+      { title:"Main Lift (30 min)", exs:[
+        {n:"DB goblet squat",s:"4 × 10",note:"Heavier DB — challenge the quads and glutes"},
+        {n:"DB hip thrust",s:"4 × 12",note:"Add load — DB on hip or heavier DB at chest"},
+        {n:"Lateral band walk",s:"3 × 20 each direction",note:""},
+        {n:"Single-leg calf raise (DB)",s:"3 × 15 each",note:""},
+        {n:"Band hip flexor march",s:"3 × 15 each",note:"Slow and controlled — feel the hip flexor fire"},
+        {n:"DB reverse lunge",s:"3 × 10 each",note:"Loading the hip flexor eccentrically on the way down"}
+      ]},
+      { title:"Explosive Add-On (5 min)", exs:[
+        {n:"Broad jump",s:"3 × 5",note:"Max distance — full hip extension"}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Supine figure-4",s:"2 min each side",note:""},
+        {n:"Kneeling calf stretch",s:"90s each",note:""},
+        {n:"Prone hip flexor (cobra)",s:"60s",note:""}
+      ]}
+    ]},
+    { name:"Thursday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest",s:"—",note:""}]}
+    ]},
+    { name:"Friday", type:"Lift C — Full Body Power", pills:["str","exp","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope — high knees",s:"3 × 45s",note:""},
+        {n:"Band pull-apart",s:"2 × 12",note:""},
+        {n:"Inchworm + push-up",s:"2 × 8",note:""}
+      ]},
+      { title:"Explosive Block (15 min)", exs:[
+        {n:"Box jump (bench)",s:"4 × 5",note:"Focus on landing mechanics — quiet feet"},
+        {n:"Lateral bound",s:"3 × 6 each",note:"Push off outside foot, land on opposite, stick it"},
+        {n:"Jump rope — single leg",s:"2 × 30s each",note:"Calf and ankle stiffness"}
+      ]},
+      { title:"Strength Block (20 min)", exs:[
+        {n:"DB sumo deadlift",s:"4 × 10",note:"Heavier than week 1"},
+        {n:"DB single-arm row",s:"4 × 10 each",note:""},
+        {n:"Hollow body hold",s:"3 × 25s",note:""},
+        {n:"Pallof press (band)",s:"3 × 12 each side",note:""}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Full sequence",s:"10 min",note:"Hip flexor, pigeon, hamstring, calf — prioritize hips"}
+      ]}
+    ]},
+    { name:"Saturday", type:"Easy Run + Flexibility", pills:["run","flex"], blocks:[
+      { title:"Run (25 min)", exs:[
+        {n:"Easy jog",s:"25 min",note:"Finish with 6 × 20m strides"}
+      ]},
+      { title:"Flexibility (20 min)", exs:[
+        {n:"Full body stretch",s:"20 min",note:"Extra time on hip flexors — 2+ min each side"}
+      ]}
+    ]},
+    { name:"Sunday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest",s:"—",note:""}]}
+    ]}
+  ]
+},
+// WEEK 3 - VACATION
+{
+  phase:1, title:"Week 3", sub:"VACATION — Bodyweight & band program",
+  vacation: true,
+  targets:["Bodyweight","Bands","Glutes","Core","Flexibility"],
+  note:"No weights, no bench, no problem. Every exercise this week uses only bodyweight or resistance bands. The goal is to maintain the foundation from weeks 1–2 and keep the hip flexors and calves active. Flexibility gets priority — vacation is a great time for longer holds.",
+  days:[
+    { name:"Monday", type:"Bodyweight Back & Core", pills:["str","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope or high knees in place",s:"3 × 60s",note:""},
+        {n:"Band pull-apart",s:"2 × 15",note:""},
+        {n:"Cat-cow + thoracic rotation",s:"2 × 10",note:""}
+      ]},
+      { title:"Main Block (30 min)", exs:[
+        {n:"Band bent-over row",s:"4 × 12 each side",note:"Anchor band under feet — same position as DB row"},
+        {n:"Superman hold",s:"3 × 10",note:"Lie face down, squeeze shoulder blades, hold 3s each"},
+        {n:"Single-leg hip hinge (bodyweight)",s:"3 × 10 each",note:"Slow and controlled — feel the hamstring"},
+        {n:"Plank with shoulder tap",s:"3 × 12 each",note:""},
+        {n:"Dead bug",s:"3 × 10 each side",note:""},
+        {n:"Single-leg calf raise (bodyweight)",s:"3 × 20 each",note:"Slow 3-count down — tempo is the load"}
+      ]},
+      { title:"Flexibility (15 min)", exs:[
+        {n:"Hip flexor lunge",s:"2 min each side",note:""},
+        {n:"Pigeon pose",s:"2 min each side",note:""},
+        {n:"Hamstring reach",s:"90s each side",note:""}
+      ]}
+    ]},
+    { name:"Tuesday", type:"Easy Run + Long Flexibility", pills:["run","flex"], blocks:[
+      { title:"Run (20 min)", exs:[
+        {n:"Easy jog",s:"20 min",note:"Find a path, beach, or park — enjoy it"},
+        {n:"4 × 20m strides",s:"at end",note:"75% — relaxed"}
+      ]},
+      { title:"Long Flexibility Session (25 min)", exs:[
+        {n:"Hip flexor lunge + reach",s:"2.5 min each side",note:"Vacation = more time = longer holds"},
+        {n:"Pigeon pose",s:"2.5 min each side",note:""},
+        {n:"Band hamstring (or towel assist)",s:"2 min each side",note:""},
+        {n:"Calf stretch both positions",s:"90s each",note:""},
+        {n:"Thoracic rotation seated",s:"90s each side",note:""}
+      ]}
+    ]},
+    { name:"Wednesday", type:"Bodyweight Lower Body Power", pills:["exp","flex"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"High knees in place",s:"3 × 45s",note:""},
+        {n:"Band clamshell",s:"2 × 15 each",note:""},
+        {n:"Hip circle walkout",s:"2 × 10",note:""}
+      ]},
+      { title:"Explosive Block (20 min)", exs:[
+        {n:"Broad jump",s:"5 × 5",note:"Max distance — full hip drive"},
+        {n:"Vertical jump",s:"4 × 5",note:"Reach as high as possible"},
+        {n:"Lateral bound",s:"4 × 6 each",note:"Push off outside leg, stick the landing"},
+        {n:"Single-leg calf raise fast",s:"3 × 20 each",note:"Speed tempo — ankle stiffness and calf power"}
+      ]},
+      { title:"Strength Block (20 min)", exs:[
+        {n:"Deep squat with 3s pause",s:"4 × 12",note:"Knees out, chest tall"},
+        {n:"Single-leg glute bridge",s:"4 × 12 each",note:"Squeeze hard at top — hold 2s"},
+        {n:"Band lateral walk",s:"3 × 20 each direction",note:""},
+        {n:"Band hip flexor march",s:"3 × 15 each",note:""},
+        {n:"Reverse lunge with knee drive",s:"3 × 10 each",note:"Drive the knee up at the top — hip flexor activation"}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Figure-4 supine",s:"2 min each side",note:""},
+        {n:"Kneeling calf stretch",s:"90s each",note:""},
+        {n:"Forward fold",s:"90s",note:""}
+      ]}
+    ]},
+    { name:"Thursday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest",s:"—",note:"Enjoy vacation!"}]}
+    ]},
+    { name:"Friday", type:"Full Body Bodyweight Power", pills:["str","exp","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"High knees",s:"3 × 45s",note:""},
+        {n:"Dynamic lunge flow",s:"2 × 8 each",note:""},
+        {n:"Inchworm walkout",s:"2 × 6",note:""}
+      ]},
+      { title:"Power Circuit — 4 rounds, 45s rest between", exs:[
+        {n:"Broad jump",s:"5 reps",note:""},
+        {n:"Push-up",s:"10 reps",note:"Chest to floor, full extension"},
+        {n:"Single-leg glute bridge",s:"10 each side",note:""},
+        {n:"Lateral bound",s:"6 each side",note:""},
+        {n:"Hollow body hold",s:"25s",note:""},
+        {n:"Single-leg calf raise",s:"15 each",note:""}
+      ]},
+      { title:"Flexibility (15 min)", exs:[
+        {n:"Full sequence — hip priority",s:"15 min",note:"2 min hip flexor each side mandatory"}
+      ]}
+    ]},
+    { name:"Saturday", type:"Easy Run + Flexibility", pills:["run","flex"], blocks:[
+      { title:"Run (25 min)", exs:[
+        {n:"Easy jog",s:"25 min",note:"Enjoy the scenery — no structure needed"},
+        {n:"6 × 20m strides",s:"at end",note:""}
+      ]},
+      { title:"Flexibility (25 min)", exs:[
+        {n:"Full body — longer holds",s:"25 min",note:"Best flexibility session of the week. Everything gets 2 min."}
+      ]}
+    ]},
+    { name:"Sunday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest — enjoy vacation!",s:"—",note:""}]}
+    ]}
+  ]
+},
+// WEEK 4 - VACATION
+{
+  phase:1, title:"Week 4", sub:"VACATION — Maintain and move, keep hip flexors open",
+  vacation: true,
+  targets:["Bodyweight","Flexibility","Core","Glutes"],
+  note:"Second vacation week — keep it fun and consistent. If she completes Mon/Wed/Fri and both run days, she's doing everything right. Don't stress about intensity. The strength from weeks 1–2 isn't going anywhere. Flexibility is the #1 priority this week.",
+  days:[
+    { name:"Monday", type:"Bodyweight Strength + Core", pills:["str","core"], blocks:[
+      { title:"Warm-Up (8 min)", exs:[
+        {n:"High knees or jump rope",s:"3 × 45s",note:""},
+        {n:"Band pull-apart",s:"2 × 15",note:""},
+        {n:"Hip circles",s:"2 × 10 each",note:""}
+      ]},
+      { title:"Main Block (35 min)", exs:[
+        {n:"Band single-arm row",s:"4 × 12 each",note:"Anchor band at hip height — door handle or post"},
+        {n:"Superman hold",s:"4 × 12",note:"3s hold at top each rep"},
+        {n:"Single-leg hip hinge",s:"4 × 10 each",note:""},
+        {n:"Plank — 3 positions",s:"30s each (front/left/right)",note:"Front, left side, right side"},
+        {n:"Dead bug",s:"3 × 12 each",note:""},
+        {n:"Single-leg calf raise",s:"3 × 20 each",note:""}
+      ]},
+      { title:"Flexibility (15 min)", exs:[
+        {n:"Hip flexor priority flow",s:"15 min",note:"2 min kneeling lunge each side + pigeon 2 min + hamstring 90s"}
+      ]}
+    ]},
+    { name:"Tuesday", type:"Easy Run + Flexibility", pills:["run","flex"], blocks:[
+      { title:"Run (25 min)", exs:[
+        {n:"Easy jog",s:"25 min",note:""},
+        {n:"6 × 30m strides",s:"at end",note:"80% — a little sharper than last week"}
+      ]},
+      { title:"Flexibility (25 min)", exs:[
+        {n:"Full body long hold",s:"25 min",note:"Every major group — minimum 90s each"}
+      ]}
+    ]},
+    { name:"Wednesday", type:"Bodyweight Lower Body + Explosive", pills:["exp","str"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"High knees",s:"3 × 45s",note:""},
+        {n:"Band clamshell + lateral walk",s:"2 × 15",note:""},
+        {n:"Hip hinge pattern review",s:"2 × 10",note:""}
+      ]},
+      { title:"Power + Strength Block (40 min)", exs:[
+        {n:"Broad jump for max distance",s:"5 × 5",note:"Record best jump"},
+        {n:"Lateral bound",s:"4 × 6 each",note:""},
+        {n:"Deep squat jump",s:"4 × 8",note:"Squat down, explode up, land soft"},
+        {n:"Single-leg glute bridge",s:"4 × 12 each",note:""},
+        {n:"Band hip flexor march",s:"3 × 15 each",note:""},
+        {n:"Reverse lunge + knee drive",s:"4 × 10 each",note:""},
+        {n:"Single-leg calf raise",s:"3 × 20 each",note:""}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Figure-4, calf, quad",s:"90s each",note:""}
+      ]}
+    ]},
+    { name:"Thursday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Rest. Swim if you're at the beach — that counts.",s:"—",note:""}]}
+    ]},
+    { name:"Friday", type:"Full Body Circuit", pills:["str","exp","core"], blocks:[
+      { title:"Warm-Up (8 min)", exs:[
+        {n:"High knees + dynamic flow",s:"8 min",note:""}
+      ]},
+      { title:"Full Body Circuit — 4 rounds", exs:[
+        {n:"Broad jump",s:"5 reps",note:""},
+        {n:"Push-up",s:"12 reps",note:""},
+        {n:"Reverse lunge + knee drive",s:"10 each side",note:""},
+        {n:"Band row",s:"12 each side",note:""},
+        {n:"Hollow body hold",s:"30s",note:""},
+        {n:"Lateral bound",s:"6 each side",note:""},
+        {n:"Single-leg calf raise",s:"15 each",note:""}
+      ]},
+      { title:"Flexibility (15 min)", exs:[
+        {n:"Full sequence — celebrate it",s:"15 min",note:"Vacation ends — next week back in the garage"}
+      ]}
+    ]},
+    { name:"Saturday", type:"Easy Run + Flexibility", pills:["run","flex"], blocks:[
+      { title:"Run (25 min)", exs:[
+        {n:"Easy jog",s:"25 min",note:"Last vacation run"},
+        {n:"8 × 30m strides",s:"at end",note:"She should feel fast — let it happen"}
+      ]},
+      { title:"Flexibility (20 min)", exs:[
+        {n:"Full body flow",s:"20 min",note:"Last long flexibility session before the garage weeks — make it count"}
+      ]}
+    ]},
+    { name:"Sunday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest",s:"—",note:"Back to the garage next week!"}]}
+    ]}
+  ]
+},
+// WEEK 5
+{
+  phase:2, title:"Week 5", sub:"Strength peak — heaviest loads, superset format, explosive finishers",
+  vacation: false,
+  targets:["Back","Core","Hip Flexors","Calves","Glutes"],
+  note:"Back in the garage — time to make weeks 1–2 pay off. Introduce superset pairs to increase density. She should be picking weights where the last 2 reps of every set are a real challenge. The explosive finishers at the end of lift days convert strength into power.",
+  days:[
+    { name:"Monday", type:"Lift A — Back Strength (Superset)", pills:["str","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope",s:"3 × 60s",note:""},
+        {n:"Band face pull",s:"2 × 15",note:"Upper back and rear delt"},
+        {n:"World's greatest stretch",s:"3 each side",note:""}
+      ]},
+      { title:"Superset 1 — Back (3 rounds, 60s rest)", exs:[
+        {n:"A: DB bent-over row",s:"4 × 10 each",note:"Heaviest of program — last 2 reps should be hard"},
+        {n:"B: DB chest-supported row",s:"4 × 12",note:"Superset directly — no rest between A and B"}
+      ]},
+      { title:"Superset 2 — Core + Hip Flexor (3 rounds)", exs:[
+        {n:"A: Dead bug",s:"3 × 12 each",note:""},
+        {n:"B: Band hip flexor march",s:"3 × 15 each",note:"Superset — hip flexor strength"}
+      ]},
+      { title:"Strength Finisher", exs:[
+        {n:"DB Romanian deadlift",s:"4 × 10",note:"Heaviest of program"},
+        {n:"Single-leg calf raise (DB)",s:"3 × 15 each",note:"Slow eccentric — 3 counts down, explosive up"}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Hip flexor lunge",s:"2 min each side",note:""},
+        {n:"Pigeon",s:"2 min each side",note:""},
+        {n:"Lat stretch + child's pose",s:"90s each",note:""}
+      ]}
+    ]},
+    { name:"Tuesday", type:"Run — Acceleration Intro", pills:["run","flex"], blocks:[
+      { title:"Run (25 min)", exs:[
+        {n:"Easy jog",s:"15 min",note:""},
+        {n:"6 × 30m accelerations",s:"80% effort",note:"Smooth build-ups — not sprinting yet, full rest each"}
+      ]},
+      { title:"Flexibility (20 min)", exs:[
+        {n:"Full lower body flow",s:"20 min",note:"Hip flexor, pigeon, hamstring, calf, quad — 90s+ each"}
+      ]}
+    ]},
+    { name:"Wednesday", type:"Lift B — Hip & Glute Power (Superset)", pills:["str","exp"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope — alternating",s:"3 × 60s",note:""},
+        {n:"Band clamshell + lateral walk",s:"2 × 15",note:""},
+        {n:"Hip hinge pattern",s:"2 × 10",note:""}
+      ]},
+      { title:"Superset 1 — Glute + Calf (3 rounds)", exs:[
+        {n:"A: DB hip thrust",s:"4 × 12",note:"Drive through heel — not lower back"},
+        {n:"B: Single-leg calf raise (DB)",s:"4 × 15 each",note:"Immediate superset"}
+      ]},
+      { title:"Superset 2 — Squat + Hip Flexor (3 rounds)", exs:[
+        {n:"A: DB goblet squat",s:"4 × 10",note:"Heaviest yet"},
+        {n:"B: Band hip flexor march",s:"4 × 15 each",note:""}
+      ]},
+      { title:"Explosive Finisher", exs:[
+        {n:"Broad jump",s:"4 × 5",note:"Maximum distance — record best"},
+        {n:"Lateral bound",s:"3 × 6 each",note:"Push hard off outside leg"},
+        {n:"Box jump (bench)",s:"3 × 5",note:""}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Figure-4",s:"2 min each side",note:""},
+        {n:"Reverse lunge + reach",s:"90s each",note:"Hip flexor stretch under load"},
+        {n:"Kneeling calf stretch",s:"90s each",note:""}
+      ]}
+    ]},
+    { name:"Thursday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest",s:"—",note:""}]}
+    ]},
+    { name:"Friday", type:"Lift C — Full Body Explosive Peak", pills:["str","exp","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope — high knees",s:"3 × 45s",note:""},
+        {n:"Band pull-apart",s:"2 × 15",note:""},
+        {n:"Inchworm + push-up",s:"2 × 8",note:""}
+      ]},
+      { title:"Explosive Block (20 min)", exs:[
+        {n:"Box jump",s:"5 × 5",note:"Max height available — explosive intent"},
+        {n:"Single-leg lateral bound",s:"4 × 8 each",note:""},
+        {n:"Jump rope — sprint tempo",s:"3 × 30s",note:"Fastest jump rope of program"},
+        {n:"Broad jump for max distance",s:"4 × 5",note:""}
+      ]},
+      { title:"Strength Block (20 min)", exs:[
+        {n:"DB sumo deadlift",s:"5 × 8",note:"Heaviest of program"},
+        {n:"DB single-arm row",s:"4 × 10 each",note:""},
+        {n:"Hollow body to V-up",s:"3 × 8",note:"Core progression from hollow hold"},
+        {n:"Pallof press (band)",s:"4 × 12 each",note:""}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Full sequence — hip priority",s:"10 min",note:"2 min hip flexor each side mandatory"}
+      ]}
+    ]},
+    { name:"Saturday", type:"Run + Speed Work", pills:["run","flex"], blocks:[
+      { title:"Run (25 min)", exs:[
+        {n:"Easy jog",s:"15 min",note:""},
+        {n:"8 × 30m accelerations",s:"85%",note:"Sharpest runs of the program — she should feel fast"}
+      ]},
+      { title:"Flexibility (20 min)", exs:[
+        {n:"Full body",s:"20 min",note:"Long holds — this is her second mobility session"}
+      ]}
+    ]},
+    { name:"Sunday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest",s:"—",note:""}]}
+    ]}
+  ]
+},
+// WEEK 6
+{
+  phase:2, title:"Week 6", sub:"Peak expression + benchmark — fastest and strongest of the summer",
+  vacation: false,
+  targets:["Back","Core","Hip Flexors","Calves","Glutes"],
+  note:"Week 6 is the payoff. Monday records every weight — compare to week 1. Wednesday records every jump distance — compare to week 1. Friday is a celebration of 6 weeks of work. She should arrive at soccer preseason feeling stronger, faster, and more flexible than she has in years.",
+  days:[
+    { name:"Monday", type:"Lift A — Benchmark Day (Back & Core)", pills:["str","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope",s:"3 × 60s",note:""},
+        {n:"Full activation — band pull-apart + world's greatest stretch",s:"10 min",note:""}
+      ]},
+      { title:"Benchmark Lifts — record every weight", exs:[
+        {n:"DB bent-over row",s:"3 × 8 each",note:"⭐ Record weight — compare to week 1"},
+        {n:"DB Romanian deadlift",s:"3 × 8",note:"⭐ Record weight"},
+        {n:"DB chest-supported row",s:"3 × 10",note:"⭐ Record weight"},
+        {n:"Hollow body hold",s:"3 × 30s",note:""},
+        {n:"Band hip flexor march",s:"3 × 15 each",note:""},
+        {n:"Single-leg calf raise (DB)",s:"3 × 15 each",note:"⭐ Record DB weight"}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Full sequence",s:"10 min",note:""}
+      ]}
+    ]},
+    { name:"Tuesday", type:"Run — Final Speed Session", pills:["run","flex"], blocks:[
+      { title:"Run (25 min)", exs:[
+        {n:"Easy jog",s:"10 min",note:""},
+        {n:"6 × 40m at 90–95%",s:"full recovery",note:"⭐ Time these — compare to week 5"}
+      ]},
+      { title:"Flexibility (20 min)", exs:[
+        {n:"Full body",s:"20 min",note:""}
+      ]}
+    ]},
+    { name:"Wednesday", type:"Lift B — Benchmark (Lower Body Power)", pills:["str","exp"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope",s:"3 × 60s",note:""},
+        {n:"Full activation",s:"2 rounds",note:""}
+      ]},
+      { title:"Explosive Benchmark — record everything", exs:[
+        {n:"Broad jump",s:"5 × 5",note:"⭐ Record best distance — compare to week 1"},
+        {n:"Box jump (bench)",s:"4 × 5",note:"⭐ Note height achieved"},
+        {n:"Lateral bound",s:"4 × 6 each",note:"⭐ Note distance"}
+      ]},
+      { title:"Strength Benchmark", exs:[
+        {n:"DB goblet squat",s:"3 × 8",note:"⭐ Record weight"},
+        {n:"DB hip thrust",s:"3 × 10",note:"⭐ Record weight"},
+        {n:"DB reverse lunge",s:"3 × 8 each",note:"⭐ Record weight"},
+        {n:"Single-leg calf raise (DB)",s:"3 × 15 each",note:"⭐ Record weight"}
+      ]},
+      { title:"Flexibility (10 min)", exs:[
+        {n:"Full lower body",s:"10 min",note:""}
+      ]}
+    ]},
+    { name:"Thursday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest",s:"—",note:""}]}
+    ]},
+    { name:"Friday", type:"Final Session — Celebrate the Work", pills:["str","exp","core"], blocks:[
+      { title:"Warm-Up (10 min)", exs:[
+        {n:"Jump rope",s:"3 × 60s",note:""},
+        {n:"Dynamic flow",s:"2 × 8 each",note:""}
+      ]},
+      { title:"Best-Of Explosive Circuit", exs:[
+        {n:"Box jump",s:"4 × 5",note:""},
+        {n:"Broad jump",s:"4 × 5",note:""},
+        {n:"Lateral bound",s:"4 × 6 each",note:""},
+        {n:"Jump rope sprint",s:"3 × 30s",note:""}
+      ]},
+      { title:"Best-Of Strength", exs:[
+        {n:"DB sumo deadlift",s:"3 × 8",note:""},
+        {n:"DB row",s:"3 × 10 each",note:""},
+        {n:"Pallof press",s:"3 × 12 each",note:""},
+        {n:"V-up",s:"3 × 12",note:""}
+      ]},
+      { title:"Final Flexibility — Celebrate", exs:[
+        {n:"Full body — long holds, every group",s:"15 min",note:"She's earned it. 6 weeks done."}
+      ]}
+    ]},
+    { name:"Saturday", type:"Optional Benchmark Run", pills:["run","flex"], blocks:[
+      { title:"Optional Run", exs:[
+        {n:"Easy jog",s:"10 min",note:""},
+        {n:"4 × 40m at max effort",s:"full rest",note:"⭐ Time these. End-of-summer speed benchmark."}
+      ]},
+      { title:"Final Flexibility Session (25 min)", exs:[
+        {n:"Full body — longest holds of program",s:"25 min",note:"Everything gets 2 min. She's done it. Preseason is next."}
+      ]}
+    ]},
+    { name:"Sunday", type:"Full Rest", pills:["rest"], blocks:[
+      { title:"Rest Day", exs:[{n:"Complete rest — preseason is next!",s:"—",note:""}]}
+    ]}
+  ]
+}
+];
+
+// ---- STATE ----
+let state = {
+  phase: 0,
+  week: 0,
+  checked: {},   // key: "w-d-b-e" => true
+  crossed: {},   // key: "w-d-b-e" => true
+  customNames: {}, // key => new name
+  customSchemes: {},
+  addedExs: {},  // key "w-d-b" => [{n,s,note}]
+};
+
+function loadState(){
+  try { const s = localStorage.getItem('addisonProg'); if(s) state = {...state, ...JSON.parse(s)}; } catch(e){}
+}
+function saveState(){
+  try { localStorage.setItem('addisonProg', JSON.stringify(state)); } catch(e){}
+}
+
+function exKey(wi,di,bi,ei){ return `${wi}-${di}-${bi}-${ei}`; }
+function blockKey(wi,di,bi){ return `${wi}-${di}-${bi}`; }
+
+// ---- PROGRESS ----
+function calcProgress(){
+  let total=0, done=0;
+  programData.forEach((wk,wi)=>{
+    wk.days.forEach((d,di)=>{
+      d.blocks.forEach((b,bi)=>{
+        b.exs.forEach((e,ei)=>{
+          if(e.n === "Complete rest" || e.n.includes("Complete rest")) return;
+          total++;
+          const k = exKey(wi,di,bi,ei);
+          if(state.checked[k]) done++;
+        });
+        const added = state.addedExs[blockKey(wi,di,bi)] || [];
+        added.forEach((_,ai)=>{
+          total++;
+          const k = exKey(wi,di,bi,`a${ai}`);
+          if(state.checked[k]) done++;
+        });
+      });
+    });
+  });
+  return {total,done};
+}
+
+function calcDayProgress(wi,di){
+  let total=0, done=0;
+  const d = programData[wi].days[di];
+  d.blocks.forEach((b,bi)=>{
+    b.exs.forEach((e,ei)=>{
+      if(e.n.includes("Complete rest")) return;
+      total++;
+      if(state.checked[exKey(wi,di,bi,ei)]) done++;
+    });
+    const added = state.addedExs[blockKey(wi,di,bi)] || [];
+    added.forEach((_,ai)=>{ total++; if(state.checked[exKey(wi,di,bi,`a${ai}`)]) done++; });
+  });
+  return {total,done};
+}
+
+function updateOverall(){
+  const {total,done} = calcProgress();
+  const pct = total>0 ? Math.round(done/total*100) : 0;
+  document.getElementById('overallPill').textContent = pct+'% done';
+  document.getElementById('overallFill').style.width = pct+'%';
+  document.getElementById('overallLabel').textContent = `${done} of ${total} exercises complete`;
+}
+
+// ---- TOAST ----
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+// ---- MODAL ----
+function openBWModal(){
+  const mc = document.getElementById('modalContent');
+  mc.innerHTML = Object.entries(BW_ALTS).map(([orig,alt])=>`
+    <div style="padding:10px 0; border-bottom:1px solid #eee;">
+      <div style="font-size:12px;color:#8e8e93;margin-bottom:3px">Replace:</div>
+      <div style="font-size:14px;font-weight:600;color:#1c1c1e;margin-bottom:4px">${orig}</div>
+      <div style="font-size:12px;color:#8e8e93">With:</div>
+      <div style="font-size:14px;font-weight:500;color:#1a6b3c">${alt.swap}</div>
+      <div style="font-size:12px;color:#48484a;margin-top:3px">${alt.note}</div>
+    </div>`).join('');
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
+document.getElementById('modalBg').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+
+// ---- RENDER ----
+function render(){
+  renderPhaseTabs();
+  renderWeekBar();
+  renderMain();
+  updateOverall();
+}
+
+function renderPhaseTabs(){
+  const container = document.getElementById('phaseTabs');
+  container.innerHTML = phases.map((p,i)=>
+    `<button class="ptab${state.phase===i?' active':''}" onclick="setPhase(${i})">${p}</button>`
+  ).join('');
+}
+
+function getPhaseWeeks(ph){
+  return programData.map((w,i)=>({...w,idx:i})).filter(w=>w.phase===ph);
+}
+
+function renderWeekBar(){
+  const pw = getPhaseWeeks(state.phase);
+  document.getElementById('weekBar').innerHTML = pw.map(w=>
+    `<button class="wtab${w.idx===state.week?' active':''}" onclick="setWeek(${w.idx})">${w.title}${w.vacation?' 🌴':''}</button>`
+  ).join('');
+}
+
+function setPhase(p){
+  state.phase = p;
+  const pw = getPhaseWeeks(p);
+  state.week = pw[0].idx;
+  saveState(); render();
+}
+function setWeek(w){ state.week = w; saveState(); render(); }
+
+function renderMain(){
+  const wi = state.week;
+  const wk = programData[wi];
+  let html = '';
+
+  if(wk.vacation){
+    html += `<div class="vacation-banner"><span class="icon">🌴</span><div><strong>Vacation Week</strong><br>All exercises are bodyweight or band-only — no gym needed. Focus on consistency, flexibility, and fun.</div></div>`;
+  }
+
+  html += `<div class="week-meta">
+    <div class="week-title">${wk.title}${wk.vacation?' — Vacation':''}</div>
+    <div class="week-sub">${wk.sub}</div>
+    <div class="target-chips">${wk.targets.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+    ${wk.vacation?`<div style="margin-top:10px"><button onclick="openBWModal()" style="background:#e8f5ee;color:#1a6b3c;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;">📋 View all bodyweight substitutions</button></div>`:''}
+  </div>`;
+
+  html += `<div class="days">`;
+  wk.days.forEach((d,di)=>{
+    const isRest = d.pills.includes('rest');
+    const {total,done} = calcDayProgress(wi,di);
+    const pct = total>0 ? Math.round(done/total*100) : 0;
+    const allDone = total>0 && done===total;
+
+    html += `<div class="day-card${isRest?' rest-card':''}${allDone?' all-done':''}" id="day-${wi}-${di}">
+      <div class="day-header" onclick="toggleDay(${wi},${di})">
+        <div>
+          <div class="day-name">${d.name}${allDone?' ✓':''}</div>
+          <div class="day-title">${d.type}</div>
+          <div class="day-pills">${d.pills.map(p=>`<span class="dpill ${p}">${p}</span>`).join('')}</div>
+          ${!isRest&&total>0?`<div class="day-progress"><div class="day-progress-fill" style="width:${pct}%"></div></div>`:''}
+        </div>
+        <div class="chevron">⌄</div>
+      </div>
+      <div class="day-body">`;
+
+    d.blocks.forEach((b,bi)=>{
+      html += `<div class="block">
+        <div class="block-title">${b.title}</div>`;
+
+      b.exs.forEach((e,ei)=>{
+        html += renderExRow(wi,di,bi,ei,e,false);
+      });
+
+      // Added exercises
+      const added = state.addedExs[blockKey(wi,di,bi)] || [];
+      added.forEach((ae,ai)=>{
+        html += renderExRow(wi,di,bi,`a${ai}`,ae,true,ai);
+      });
+
+      // Add exercise button
+      html += `<button class="add-ex-btn" onclick="showAddForm(${wi},${di},${bi})">＋ Add exercise</button>
+        <div class="add-ex-form" id="addform-${wi}-${di}-${bi}">
+          <input class="edit-input" id="addname-${wi}-${di}-${bi}" placeholder="Exercise name" />
+          <input class="edit-input" id="addscheme-${wi}-${di}-${bi}" placeholder="Sets × reps (e.g. 3 × 10)" />
+          <input class="edit-input" id="addnote-${wi}-${di}-${bi}" placeholder="Coaching note (optional)" />
+          <div class="add-row">
+            <button class="btn-sm btn-save" onclick="addExercise(${wi},${di},${bi})">Add</button>
+            <button class="btn-sm btn-cancel" onclick="hideAddForm(${wi},${di},${bi})">Cancel</button>
+          </div>
+        </div>`;
+
+      html += `</div>`;
+    });
+
+    html += `</div></div></div>`;
+  });
+
+  html += `</div>`;
+  html += `<div class="coach-note"><strong>Coach's note</strong>${wk.note}</div>`;
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function renderExRow(wi,di,bi,ei,e,isAdded,addedIdx){
+  const k = exKey(wi,di,bi,ei);
+  const isChecked = !!state.checked[k];
+  const isCrossed = !!state.crossed[k];
+  const isRest = e.n.includes("Complete rest");
+  const hasBW = BW_ALTS[e.n];
+  const dispName = state.customNames[k] || e.n;
+  const dispScheme = state.customSchemes[k] || e.s;
+
+  let cls = 'ex-row';
+  if(isCrossed) cls += ' crossed';
+  if(isChecked) cls += ' done';
+
+  const deleteBtn = isAdded
+    ? `<button class="btn-sm btn-delete" onclick="deleteAdded(${wi},${di},${bi},${addedIdx})">Delete</button>`
+    : `<button class="btn-sm btn-delete" onclick="crossOut(${wi},${di},${bi},'${ei}')">Cross out</button>`;
+
+  return `<div class="${cls}" id="exrow-${k}">
+    ${!isRest?`<div class="checkmark" onclick="toggleCheck('${k}')">${isChecked?'✓':''}</div>`:'<div style="width:24px;flex-shrink:0"></div>'}
+    <div class="ex-content">
+      <div class="ex-name-row">
+        <span class="ex-name">${dispName}</span>
+        <span class="ex-scheme">${dispScheme}</span>
+        ${!isRest?`<button class="edit-toggle" onclick="toggleEdit('${k}',${wi},${di},${bi},'${ei}',${isAdded?1:0},${addedIdx!==undefined?addedIdx:-1})" title="Edit">✏️</button>`:''}
+      </div>
+      ${e.note?`<div class="ex-note">${e.note}</div>`:''}
+      ${hasBW&&!isCrossed?`<div class="ex-note bodyweight">💪 BW swap: ${BW_ALTS[e.n].swap}</div>`:''}
+      <div class="ex-edit-inputs" id="editinputs-${k}">
+        <input class="edit-input" id="editname-${k}" value="${dispName}" placeholder="Exercise name"/>
+        <input class="edit-input" id="editscheme-${k}" value="${dispScheme}" placeholder="Sets × reps"/>
+        <input class="edit-input" id="editnote-${k}" value="${e.note||''}" placeholder="Coaching note"/>
+      </div>
+      <div class="ex-actions" id="exactions-${k}">
+        <button class="btn-sm btn-save" onclick="saveEdit('${k}',${wi},${di},${bi},'${ei}',${isAdded?1:0},${addedIdx!==undefined?addedIdx:-1})">Save</button>
+        ${deleteBtn}
+        <button class="btn-sm btn-cancel" onclick="cancelEdit('${k}')">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---- INTERACTIONS ----
+function toggleDay(wi,di){
+  const card = document.getElementById(`day-${wi}-${di}`);
+  card.classList.toggle('open');
+}
+
+function toggleCheck(k){
+  state.checked[k] = !state.checked[k];
+  saveState();
+  if(state.checked[k]) showToast('Exercise done ✓');
+  render();
+}
+
+function crossOut(wi,di,bi,ei){
+  const k = exKey(wi,di,bi,ei);
+  state.crossed[k] = !state.crossed[k];
+  if(state.crossed[k]) state.checked[k] = false;
+  saveState(); render();
+  showToast(state.crossed[k] ? 'Exercise crossed out — add a replacement below' : 'Restored');
+}
+
+function toggleEdit(k,wi,di,bi,ei,isAdded,addedIdx){
+  const row = document.getElementById(`exrow-${k}`);
+  row.classList.toggle('editing');
+}
+
+function cancelEdit(k){
+  const row = document.getElementById(`exrow-${k}`);
+  row.classList.remove('editing');
+}
+
+function saveEdit(k,wi,di,bi,ei,isAdded,addedIdx){
+  const newName = document.getElementById(`editname-${k}`).value.trim();
+  const newScheme = document.getElementById(`editscheme-${k}`).value.trim();
+  const newNote = document.getElementById(`editnote-${k}`).value.trim();
+  if(!newName) return;
+  if(isAdded && addedIdx>=0){
+    const bk = blockKey(wi,di,bi);
+    if(state.addedExs[bk] && state.addedExs[bk][addedIdx]){
+      state.addedExs[bk][addedIdx] = {n:newName,s:newScheme,note:newNote};
+    }
+  } else {
+    state.customNames[k] = newName;
+    state.customSchemes[k] = newScheme;
+  }
+  saveState(); render(); showToast('Exercise updated');
+}
+
+function deleteAdded(wi,di,bi,ai){
+  const bk = blockKey(wi,di,bi);
+  if(state.addedExs[bk]) state.addedExs[bk].splice(ai,1);
+  saveState(); render(); showToast('Exercise removed');
+}
+
+function showAddForm(wi,di,bi){
+  const f = document.getElementById(`addform-${wi}-${di}-${bi}`);
+  f.classList.toggle('open');
+}
+function hideAddForm(wi,di,bi){
+  document.getElementById(`addform-${wi}-${di}-${bi}`).classList.remove('open');
+}
+function addExercise(wi,di,bi){
+  const n = document.getElementById(`addname-${wi}-${di}-${bi}`).value.trim();
+  const s = document.getElementById(`addscheme-${wi}-${di}-${bi}`).value.trim();
+  const note = document.getElementById(`addnote-${wi}-${di}-${bi}`).value.trim();
+  if(!n) return;
+  const bk = blockKey(wi,di,bi);
+  if(!state.addedExs[bk]) state.addedExs[bk] = [];
+  state.addedExs[bk].push({n,s,note});
+  saveState(); render(); showToast('Exercise added');
+}
+
+// ---- INIT ----
+loadState();
+render();
+</script>
+</body>
+</html>
